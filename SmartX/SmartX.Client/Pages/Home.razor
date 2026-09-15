@@ -1,0 +1,35 @@
+﻿@page "/"
+
+<div class="container text-center mt-5">
+    <h1 class="display-4 text-primary">Smart-X IoT Ecosystem</h1>
+    <p class="lead">Gateway Configuration Dashboard</p>
+
+    <div class="row mt-5">
+        <!-- Pillar 1: Active -->
+        <div class="col-md-4">
+            <div class="card p-3 shadow border-success">
+                <h3>Sensor Data Ingestion</h3>
+                <p>Register sensors and view real-time telemetry.</p>
+                <a href="/ingestion" class="btn btn-success w-100">Enter Gateway</a>
+            </div>
+        </div>
+
+        <!-- Pillar 2: Disabled -->
+        <div class="col-md-4">
+            <div class="card p-3 shadow bg-light text-muted">
+                <h3>Command Stream</h3>
+                <p>Real-Time Command Stream and History</p>
+                <button class="btn btn-secondary w-100" disabled>Disabled (Part 2)</button>
+            </div>
+        </div>
+
+        <!-- Pillar 3: Disabled -->
+        <div class="col-md-4">
+            <div class="card p-3 shadow bg-light text-muted">
+                <h3>Mesh Routing</h3>
+                <p>Network Topology and Mesh Routing</p>
+                <button class="btn btn-secondary w-100" disabled>Disabled (Final PoE)</button>
+            </div>
+        </div>
+    </div>
+</div>

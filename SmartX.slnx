@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SmartX/SmartX.Client/SmartX.Client.csproj" />
+  <Project Path="SmartX/SmartX/SmartX.csproj" />
+</Solution>
