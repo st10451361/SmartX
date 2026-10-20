@@ -17,6 +17,7 @@ namespace SmartX
 
             // Add validation service
             builder.Services.AddSingleton<ValidationService>();
+            builder.Services.AddSingleton<SmartXDataManager>();
             // Add controllers 
             builder.Services.AddControllers(options =>
             {

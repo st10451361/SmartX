@@ -1,0 +1,120 @@
+﻿@page "/command-stream"
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<h3 class="mt-4">Real-Time Command Stream</h3>
+
+<!-- PREDICTIVE INSIGHTS SECTION -->
+<div class="alert alert-info shadow-sm mt-3">
+    <h5>🧠 Automated Insights (Predictive Engine)</h5>
+    <ul class="mb-0">
+        @foreach (var insight in Insights)
+        {
+            <li>@insight</li>
+        }
+    </ul>
+</div>
+
+<div class="row mt-4">
+    <!-- SEARCH & DEVICE LIST -->
+    <div class="col-md-6">
+        <div class="card shadow p-3">
+            <h4>Device Management</h4>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Search by name or MAC..." @bind="SearchQuery" />
+                <button class="btn btn-primary" @onclick="SearchDevices">Search</button>
+            </div>
+
+            <table class="table table-striped">
+                <thead>
+                    <tr><th>MAC Address</th><th>Device Name</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var device in Devices)
+                    {
+                        <tr>
+                            <td>@device.Key</td>
+                            <td>@device.Value</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" @onclick="() => ToggleDevice(device.Key)">Toggle</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- COMMAND HISTORY & UNDO -->
+    <div class="col-md-6">
+        <div class="card shadow p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4>Command History</h4>
+                <button class="btn btn-danger btn-sm" @onclick="UndoCommand">↩ Undo Last Command</button>
+            </div>
+            <p class="text-muted mt-2">@CommandMessage</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Dictionary<string, string> Devices = new();
+    private List<string> Insights = new();
+    private string SearchQuery = "";
+    private string CommandMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDevices();
+        await LoadInsights();
+    }
+
+    private async Task LoadDevices()
+    {
+        Devices = await Http.GetFromJsonAsync<Dictionary<string, string>>("api/commandstream/devices") ?? new();
+    }
+
+    private async Task SearchDevices()
+    {
+        var url = string.IsNullOrWhiteSpace(SearchQuery)
+            ? "api/commandstream/devices"
+            : $"api/commandstream/search?query={SearchQuery}";
+
+        Devices = await Http.GetFromJsonAsync<Dictionary<string, string>>(url) ?? new();
+        await LoadInsights(); // Reload insights based on the search
+    }
+
+    private async Task ToggleDevice(string mac)
+    {
+        var command = new { DeviceMac = mac, CommandType = "Toggle Relay" };
+        var response = await Http.PostAsJsonAsync("api/commandstream/issue-command", command);
+
+        if (response.IsSuccessStatusCode)
+        {
+            CommandMessage = $"Successfully sent Toggle command to {mac}";
+            await LoadInsights();
+        }
+    }
+
+    private async Task UndoCommand()
+    {
+        var response = await Http.PostAsync("api/commandstream/undo", null);
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<CommandResponse>();
+            CommandMessage = result?.message ?? "Undo successful.";
+        }
+        else
+        {
+            CommandMessage = "No commands to undo.";
+        }
+        await LoadInsights();
+    }
+
+    private async Task LoadInsights()
+    {
+        Insights = await Http.GetFromJsonAsync<List<string>>("api/commandstream/insights") ?? new();
+    }
+
+    public class CommandResponse { public string message { get; set; } = ""; }
+}
